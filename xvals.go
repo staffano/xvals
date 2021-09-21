@@ -28,6 +28,16 @@ func Value(key string) (string, error) {
 	return "", fmt.Errorf("key not found %s", key)
 }
 
+// ValueD retrieves a value. If it doesn't exist it will returen defaultVal
+// instead
+func ValueD(key, defaultVal string) string {
+	v, e := Value(key)
+	if e != nil {
+		return defaultVal
+	}
+	return v
+}
+
 // BoolValue is a convenience function to fetch and parse
 // a value as a boolean
 func BoolValue(key string) (val bool, err error) {
@@ -38,6 +48,15 @@ func BoolValue(key string) (val bool, err error) {
 	return strconv.ParseBool(sv)
 }
 
+// BoolValueD return values as bool, or return defaultVal, if it doesn't exist
+func BoolValueD(key string, defaultVal bool) bool {
+	b, e := BoolValue(key)
+	if e != nil {
+		return defaultVal
+	}
+	return b
+}
+
 // IntValue is a convenience function to fetch and parse
 // a value as an int
 func IntValue(key string) (val int, err error) {
@@ -46,6 +65,15 @@ func IntValue(key string) (val int, err error) {
 		return 0, err
 	}
 	return strconv.Atoi(sv)
+}
+
+// IntValueD return value as int, or defaultVal if non-existent.
+func IntValueD(key string, defaultVal int) int {
+	v, e := IntValue(key)
+	if e != nil {
+		return defaultVal
+	}
+	return v
 }
 
 // Dump returns a merged set of all values available.

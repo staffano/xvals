@@ -95,6 +95,11 @@ func (e *Endpoint) Write(name string, w io.Writer) {
 	fmt.Fprintf(w, "EP_%s_PATH=%s", un, e.Path)
 }
 
+// UseTLS returns false if TLS should not be considered
+func (e *Endpoint) UseTLS() bool {
+	return e.TLS == "server" || e.TLS == "mTLS"
+}
+
 func (e *Endpoint) Get(field string) (val string, err error) {
 
 	switch tu(field) {
