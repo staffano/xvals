@@ -16,7 +16,7 @@ func TestGetAllEndpoints(t *testing.T) {
 		ClientCert:   "ClientCert",
 		ClientKey:    "ClientKey",
 	}
-	ep_vars := map[string]string{
+	epVars := map[string]string{
 		"ep_ep1_Address":       "Address",
 		"ep_ep1_TLS":           "TLS",
 		"ep_ep1_Server_CACert": "ServerCACert",
@@ -27,8 +27,8 @@ func TestGetAllEndpoints(t *testing.T) {
 		"ep_ep1_Client_Key":    "ClientKey",
 	}
 	os := NewObjectStore()
-	os.AddDescriptor(&EpDescriptor{})
-	os.Reload(ep_vars)
+	os.AddDescriptor(EndpointDescr)
+	os.Reload(epVars)
 	ep1r, e := os.Get("ep", "ep1")
 	if e != nil {
 		t.FailNow()

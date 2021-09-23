@@ -3,6 +3,7 @@ package xvals
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // ctxt contains the executable wide view of the xvals.
@@ -20,8 +21,9 @@ func HasValue(key string) bool {
 // Value returns the value as a string. An error is returned
 // if the value didn't exist.
 func Value(key string) (string, error) {
+	lcVal := strings.ToLower(key)
 	for _, v := range ctxt {
-		if r, e := v.Value(key); e == nil {
+		if r, e := v.Value(lcVal); e == nil {
 			return r, nil
 		}
 	}
@@ -96,7 +98,7 @@ func Objects() map[string]Object {
 	return objectStore.Objects()
 }
 
-// Get an object based on type and name
+// GetObject retrieves an object based on type and name
 func GetObject(typ, name string) (Object, error) {
 	return objectStore.Get(typ, name)
 }

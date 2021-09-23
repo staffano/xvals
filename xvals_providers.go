@@ -43,9 +43,9 @@ func (c *envValProvider) Reload() error {
 	for _, v := range os.Environ() {
 		s := strings.Split(v, "=")
 		if len(s) == 1 {
-			res[s[0]] = ""
+			res[strings.ToLower(s[0])] = ""
 		} else if len(s) > 1 {
-			res[s[0]] = strings.Join(s[1:], "")
+			res[strings.ToLower(s[0])] = strings.Join(s[1:], "")
 		}
 	}
 	c.vals = res
@@ -84,8 +84,12 @@ func (c *configFileProvider) readFile() error {
 	if e != nil {
 		return e
 	}
+	vals := make(map[string]string)
 	c.ctx = &CfgFile{Values: make(map[string]string)}
-	e = yaml.Unmarshal(d, c.ctx)
+	e = yaml.Unmarshal(d, &vals)
+	for k, v := range vals {
+		c.ctx.Values[strings.ToLower(k)] = v
+	}
 	return e
 }
 
@@ -104,7 +108,7 @@ func (c *configFileProvider) Reload() error {
 	return c.readFile()
 }
 
-// WithEnvironment adds environmental variables to the xval context.
+// WithMap adds environmental variables to the xval context.
 func WithMap(src map[string]string) (XvalProvider, error) {
 	p := &mapProvider{vals: src}
 	ctxt = append(ctxt, p)

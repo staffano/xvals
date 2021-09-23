@@ -28,13 +28,13 @@ func GetEndpoint(name string) (*Endpoint, error) {
 	return ep, nil
 }
 
-// GetClientTlsConfig returns a *tls.Config suitable for a server
+// GetClientTLSConfig returns a *tls.Config suitable for a server
 // We need the following values from the endpoint
 // - TLS=[none|server|mtls]
 // - ServerCACert=[file|string|"external"]
 // - ClientCertificate=[file|string]
 // - ClientPrivateKey=[file|string]
-func (e *Endpoint) GetClientTlsConfig() (*tls.Config, error) {
+func (e *Endpoint) GetClientTLSConfig() (*tls.Config, error) {
 
 	var err error
 	tlsConfig := new(tls.Config)
@@ -73,13 +73,13 @@ func (e *Endpoint) GetClientTlsConfig() (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
-// GetServerTlsConfig returns a *tls.Config suitable for a server
+// GetServerTLSConfig returns a *tls.Config suitable for a server
 // We need the following values from the endpoint
 // - TLS=[none|server|mtls]
 // - ServerCertificate=[file|string]
 // - ServerPrivateKey=[file|string]
 // - ClientCACert=[file|string]
-func (e *Endpoint) GetServerTlsConfig() (*tls.Config, error) {
+func (e *Endpoint) GetServerTLSConfig() (*tls.Config, error) {
 
 	tlsConfig := new(tls.Config)
 
@@ -111,7 +111,7 @@ func (e *Endpoint) GetServerTlsConfig() (*tls.Config, error) {
 // GrpcClientConn creates a client grpc connection to the endpoint
 func (e *Endpoint) GrpcClientConn(ctx context.Context, options ...grpc.DialOption) (*grpc.ClientConn, error) {
 	if e.TLS == "server" || e.TLS == "mTLS" {
-		tlsConfig, err := e.GetClientTlsConfig()
+		tlsConfig, err := e.GetClientTLSConfig()
 		if err != nil {
 			return nil, err
 		}
@@ -132,7 +132,7 @@ func (e *Endpoint) GrpcServerListener(allInterfaces bool, options ...grpc.Server
 	}
 
 	if e.TLS == "server" || e.TLS == "mTLS" {
-		tlsConfig, err := e.GetServerTlsConfig()
+		tlsConfig, err := e.GetServerTLSConfig()
 		if err != nil {
 			return nil, nil, err
 		}
@@ -150,13 +150,11 @@ func (e *Endpoint) GrpcServerListener(allInterfaces bool, options ...grpc.Server
 	return server, listener, nil
 }
 
-/*
-	HttpClientConnInfo creates a client and an url, which the user can use to
-	setup the client connection to the server.
-*/
-func (e *Endpoint) HttpClientConnInfo(name string) (client *http.Client, u url.URL, err error) {
+// HTTPClientConnInfo creates a client and an url, which the user can use to
+// setup the client connection to the server.
+func (e *Endpoint) HTTPClientConnInfo(name string) (client *http.Client, u url.URL, err error) {
 	if e.TLS == "server" || e.TLS == "mTLS" {
-		tlsConfig, err := e.GetClientTlsConfig()
+		tlsConfig, err := e.GetClientTLSConfig()
 		if err != nil {
 			return client, u, err
 		}
@@ -180,18 +178,15 @@ func (e *Endpoint) HttpClientConnInfo(name string) (client *http.Client, u url.U
 	return
 }
 
-/*
-	HttpServerListener creates a http.Server and a net.Listener to be used by a http server.
-
-		...
-		ep,_ := xvals.GetEndpoint("my_endpoint")
-		server,listener,_ := ep.HttpServerListener(true)
-		server.Handler = http.NotFoundHandler()
-		server.Serve(listener)
-		...
-
+/* HTTPServerListener creates a http.Server and a net.Listener to be used by a http server.
+...
+	ep,_ := xvals.GetEndpoint("my_endpoint")
+	server,listener,_ := ep.HTTPServerListener(true)
+	server.Handler = http.NotFoundHandler()
+	server.Serve(listener)
+...
 */
-func (e *Endpoint) HttpServerListener(allInterfaces bool) (*http.Server, net.Listener, error) {
+func (e *Endpoint) HTTPServerListener(allInterfaces bool) (*http.Server, net.Listener, error) {
 	var (
 		listenAddress string
 		err           error
@@ -205,7 +200,7 @@ func (e *Endpoint) HttpServerListener(allInterfaces bool) (*http.Server, net.Lis
 	}
 	tlsConfig := new(tls.Config)
 	if e.TLS == "server" || e.TLS == "mTLS" {
-		tlsConfig, err = e.GetServerTlsConfig()
+		tlsConfig, err = e.GetServerTLSConfig()
 		if err != nil {
 			return nil, nil, err
 		}

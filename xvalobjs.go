@@ -90,6 +90,7 @@ func (c *ObjectStore) Get(typ, name string) (Object, error) {
 	return obj, nil
 }
 
+// New creates a new Object based on type name and object name
 func (c *ObjectStore) New(typ, name string) (Object, error) {
 	d, ok := c.descriptors[tu(typ)]
 	if !ok {
@@ -108,8 +109,13 @@ type GenericObject struct {
 	fields map[string]string
 }
 
-func (o *GenericObject) Type() string              { return o.typ }
+// Type returns the type of the object
+func (o *GenericObject) Type() string { return o.typ }
+
+// Fields returns all fields of the object with their values
 func (o *GenericObject) Fields() map[string]string { return o.fields }
+
+// Get returns the value of a field
 func (o *GenericObject) Get(field string) (value string, err error) {
 	v, ok := o.fields[tu(field)]
 	if !ok {
@@ -117,6 +123,8 @@ func (o *GenericObject) Get(field string) (value string, err error) {
 	}
 	return v, nil
 }
+
+// Set the value of a field
 func (o *GenericObject) Set(key, val string) error {
 	o.fields[tu(key)] = val
 	return nil
@@ -157,6 +165,8 @@ func (d *genericDescriptor) Fields() []string {
 func Key(typ, name string) string {
 	return typ + "+" + name
 }
+
+// FromKey parses the encoded type/name from the key
 func FromKey(key string) (typ, name string) {
 	s := strings.Split(key, "+")
 	if len(s) == 1 {

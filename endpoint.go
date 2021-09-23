@@ -67,8 +67,10 @@ import (
 
 */
 
+// TpEndpoint is the type name for an endpoint
 const TpEndpoint = "EP"
 
+// Endpoint is either side of a client-server connection
 type Endpoint struct {
 	Address      string `yaml:"address"`
 	TLS          string `yaml:"tls,omitempty"` // Empty is no TLS
@@ -100,6 +102,7 @@ func (e *Endpoint) UseTLS() bool {
 	return e.TLS == "server" || e.TLS == "mTLS"
 }
 
+// Get field of the endpoing
 func (e *Endpoint) Get(field string) (val string, err error) {
 
 	switch tu(field) {
@@ -126,6 +129,7 @@ func (e *Endpoint) Get(field string) (val string, err error) {
 	}
 }
 
+// Set field of the endpoint
 func (e *Endpoint) Set(field, val string) error {
 	switch tu(field) {
 	case "ADDRESS":
@@ -149,7 +153,11 @@ func (e *Endpoint) Set(field, val string) error {
 	}
 	return fmt.Errorf("field %s is not valid for an endpoint", field)
 }
+
+// Type returns the type name of the endpoint
 func (e *Endpoint) Type() string { return TpEndpoint }
+
+// Fields returns the full set of fields with values
 func (e *Endpoint) Fields() map[string]string {
 	r := map[string]string{
 		"ADDRESS":       e.Address,
@@ -165,6 +173,7 @@ func (e *Endpoint) Fields() map[string]string {
 	return r
 }
 
+// EndpointDescr contains the description of the endpoint
 var EndpointDescr = &epDescriptor{}
 
 // EpDescriptor is a type descriptor for the endpoint
