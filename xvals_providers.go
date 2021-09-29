@@ -2,6 +2,7 @@ package xvals
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,18 +20,18 @@ type XvalProvider interface {
 	Dump() map[string]string
 
 	// Reload the values from the source
-	Reload() error
+	// In case of an error, the variables will simply not be available
+	// An error message should be logged in that case.
+	Reload()
 }
 
 // WithEnvironment adds environmental variables to the xval context.
 // Will panic in case of errors
-func WithEnvironment() (XvalProvider, error) {
+func WithEnvironment() XvalProvider {
 	p := &envValProvider{}
-	if e := p.Reload(); e != nil {
-		return nil, e
-	}
+	p.Reload()
 	ctxt = append(ctxt, p)
-	return p, nil
+	return p
 }
 
 // EnvValProvider provides values from the environment variables
@@ -38,7 +39,7 @@ type envValProvider struct {
 	mapProvider
 }
 
-func (c *envValProvider) Reload() error {
+func (c *envValProvider) Reload() {
 	res := make(map[string]string)
 	for _, v := range os.Environ() {
 		s := strings.Split(v, "=")
@@ -49,23 +50,19 @@ func (c *envValProvider) Reload() error {
 		}
 	}
 	c.vals = res
-	return nil
 }
 
 // WithConfigFile adds a config file to the xval context. More than one file can be added.
 // First added file has highest priority. Last added least priority.
-func WithConfigFile(filename string) (XvalProvider, error) {
+func WithConfigFile(filename string) XvalProvider {
 	absPath, err := filepath.Abs(filename)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	c := &configFileProvider{filename: absPath}
-	e := c.readFile()
-	if e != nil {
-		return nil, e
-	}
+	c.Reload()
 	ctxt = append(ctxt, c)
-	return c, nil
+	return c
 }
 
 // CfgFile is the structure of files the ConfigFileProvider uses.
@@ -104,15 +101,18 @@ func (c *configFileProvider) Dump() map[string]string {
 	return c.ctx.Values
 }
 
-func (c *configFileProvider) Reload() error {
-	return c.readFile()
+func (c *configFileProvider) Reload() {
+	e := c.readFile()
+	if e != nil {
+		log.Printf("failed to reload configFileProvider %v", e)
+	}
 }
 
-// WithMap adds environmental variables to the xval context.
-func WithMap(src map[string]string) (XvalProvider, error) {
+// WithMap adds a map to the xval context.
+func WithMap(src map[string]string) XvalProvider {
 	p := &mapProvider{vals: src}
 	ctxt = append(ctxt, p)
-	return p, nil
+	return p
 }
 
 // mapProvider provides values from a map
@@ -131,6 +131,5 @@ func (c *mapProvider) Dump() map[string]string {
 	return c.vals
 }
 
-func (c *mapProvider) Reload() error {
-	return nil
+func (c *mapProvider) Reload() {
 }

@@ -1,0 +1,7 @@
+current_profile: profile1
+profiles:
+    profile1:
+        key1: val1
+        key2: val2
+    profile2:
+        key3: val3

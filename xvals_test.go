@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 func init() {
@@ -98,33 +100,45 @@ func TestWithEnvVars(t *testing.T) {
 
 	os.Setenv(rk, rv)
 	GetBad(t, rk)
-	r, e := WithEnvironment()
-	if e != nil {
-		t.FailNow()
-	}
+	r := WithEnvironment()
 	GetGood(t, rk, rv)
 
 	os.Unsetenv(rk)
-	if e != nil {
-		t.FailNow()
-	}
+
 	GetGood(t, rk, rv)
-	e = r.Reload()
-	if e != nil {
-		t.FailNow()
-	}
+	r.Reload()
 	GetBad(t, rk)
 }
 
 func TestWithConfigFile(t *testing.T) {
 	GetBad(t, "ep_staffan_address")
-	p, e := WithConfigFile("testdata/testctx1.yaml")
-	if e != nil {
+	p := WithConfigFile("testdata/testctx1.yaml")
+	GetGood(t, "ep_staffan_address", "localhost:12345")
+	p.Reload()
+	GetGood(t, "ep_staffan_address", "localhost:12345")
+}
+
+func TestWithProfile(t *testing.T) {
+	GetBad(t, "key1")
+	p := WithProfile("testdata/testprofiles.yaml")
+	GetGood(t, "key1", "val1")
+	p.Reload()
+	GetGood(t, "key2", "val2")
+
+	// get a value from a profile other than the current
+	GetBad(t, "key3")
+}
+
+func TestCreateProfileFile(t *testing.T) {
+	profiles := &ProfileFile{
+		CurrentProfile: "profile1",
+		Profiles: map[string]map[string]string{
+			"profile1": {"key1": "val1", "key2": "val2"},
+			"profile2": {"key3": "val3"}},
+	}
+	data, err := yaml.Marshal(profiles)
+	if err != nil {
 		t.FailNow()
 	}
-	GetGood(t, "ep_staffan_address", "localhost:12345")
-	if e := p.Reload(); e != nil {
-		t.FailNow()
-	}
-	GetGood(t, "ep_staffan_address", "localhost:12345")
+	os.WriteFile("testdata/testprofiles.yaml", data, os.ModePerm)
 }

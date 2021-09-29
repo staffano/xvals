@@ -193,6 +193,7 @@ func (e *Endpoint) HTTPServerListener(allInterfaces bool) (*http.Server, net.Lis
 		listenAddress string
 		err           error
 		listener      net.Listener
+		tlsConfig     *tls.Config
 	)
 	if allInterfaces {
 		_, port, err := net.SplitHostPort(e.Address)
@@ -201,7 +202,7 @@ func (e *Endpoint) HTTPServerListener(allInterfaces bool) (*http.Server, net.Lis
 		}
 		listenAddress = fmt.Sprintf(":%s", port)
 	}
-	tlsConfig := new(tls.Config)
+
 	if e.TLS == "server" || e.TLS == "mTLS" {
 		tlsConfig, err = e.GetServerTLSConfig()
 		if err != nil {
@@ -217,10 +218,6 @@ func (e *Endpoint) HTTPServerListener(allInterfaces bool) (*http.Server, net.Lis
 			return nil, nil, fmt.Errorf("failed to start non-tls listener")
 		}
 	}
-
-	// Create the listener
-
-	// Create a new http server
 	server := &http.Server{}
 	return server, listener, nil
 }
