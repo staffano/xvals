@@ -116,6 +116,8 @@ func (e *Endpoint) GrpcClientConn(ctx context.Context, options ...grpc.DialOptio
 			return nil, err
 		}
 		options = append(options, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	} else {
+		options = append(options, grpc.WithInsecure())
 	}
 	return grpc.Dial(e.Address, options...)
 }
@@ -190,6 +192,7 @@ func (e *Endpoint) HTTPServerListener(allInterfaces bool) (*http.Server, net.Lis
 	var (
 		listenAddress string
 		err           error
+		listener      net.Listener
 	)
 	if allInterfaces {
 		_, port, err := net.SplitHostPort(e.Address)
@@ -204,13 +207,18 @@ func (e *Endpoint) HTTPServerListener(allInterfaces bool) (*http.Server, net.Lis
 		if err != nil {
 			return nil, nil, err
 		}
+		listener, err = tls.Listen("tcp", listenAddress, tlsConfig)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to start tls listener")
+		}
+	} else {
+		listener, err = net.Listen("tcp", listenAddress)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to start non-tls listener")
+		}
 	}
 
 	// Create the listener
-	listener, err := tls.Listen("tcp", listenAddress, tlsConfig)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to start listener")
-	}
 
 	// Create a new http server
 	server := &http.Server{}
